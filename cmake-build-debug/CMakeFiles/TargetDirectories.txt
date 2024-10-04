@@ -1,0 +1,3 @@
+/Users/yinyanjiang/Desktop/C++Boost/MyLogicServer/cmake-build-debug/CMakeFiles/MyJsonServer.dir
+/Users/yinyanjiang/Desktop/C++Boost/MyLogicServer/cmake-build-debug/CMakeFiles/edit_cache.dir
+/Users/yinyanjiang/Desktop/C++Boost/MyLogicServer/cmake-build-debug/CMakeFiles/rebuild_cache.dir
