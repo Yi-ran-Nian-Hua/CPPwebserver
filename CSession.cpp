@@ -104,6 +104,8 @@ void CSession::HandleWrite(const boost::system::error_code &error, std::shared_p
     }
 }
 
+
+
 void CSession::HandleReadHead(const boost::system::error_code &error, size_t bytes_transferred,
                               std::shared_ptr<CSession> shareSelf) {
     if(!error){
@@ -115,8 +117,24 @@ void CSession::HandleReadHead(const boost::system::error_code &error, size_t byt
         }
 
         // 头部接收完毕, 解析头部
+        // 首先解析 ID
+        short dataID = 0;
+        memcpy(&dataID, _recvHeadNode->_data, HEAD_ID_LEN);
+        std::cout << "Data length is: " << dataID << std::endl;
+
+        // 字节序转换, 将网络字节序转换为本地字节序
+        int trueDataID = boost::asio::detail::socket_ops::network_to_host_short(dataID);
+
+        // 如果头部长度非法
+        if(trueDataID > MAX_LENGTH){
+            std::cerr << "Invalid ID : " << trueDataID << std::endl;
+            _server->ClearSession(this->getUuid());
+            return;
+        }
+
+        // 处理头部数据长度信息
         short dataLength = 0;
-        memcpy(&dataLength, _recvHeadNode->_data, HEAD_LENGTH);
+        memcpy(&dataLength, _recvHeadNode->_data + HEAD_ID_LEN, HEAD_DATA_LEN);
         std::cout << "Data length is: " << dataLength << std::endl;
 
         // 字节序转换, 将网络字节序转换为本地字节序
@@ -124,7 +142,7 @@ void CSession::HandleReadHead(const boost::system::error_code &error, size_t byt
 
         // 如果头部长度非法
         if(trueDataLength > MAX_LENGTH){
-            std::cerr << "Invalid data length: " << trueDataLength << std::endl;
+            std::cerr << "Invalid ID : " << trueDataLength << std::endl;
             _server->ClearSession(this->getUuid());
             return;
         }

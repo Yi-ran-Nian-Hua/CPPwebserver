@@ -29,9 +29,9 @@ public:
     std::shared_ptr<CSession> sharedSelf();
 private:
     void HandleReadHead(const boost::system::error_code& error, size_t bytes_transferred,
-                    std::shared_ptr<CSession> shareSelf);
+                    std::shared_ptr<CSession> shareSelf); // 处理数据头部
     void HandleReadMsg(const boost::system::error_code& error, size_t bytes_transferred,
-                       std::shared_ptr<CSession> sharedSelf);
+                       std::shared_ptr<CSession> sharedSelf); // 处理信息
     void HandleWrite(const boost::system::error_code& error,
                      std::shared_ptr<CSession> shareSelf);
     boost::asio::ip::tcp::socket _socket;

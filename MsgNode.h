@@ -4,7 +4,11 @@
 
 #ifndef MYLOGICSERVER_MSGNODE_H
 #define MYLOGICSERVER_MSGNODE_H
-#include "CSession.h"
+
+#include <string>
+#include "const.h"
+#include <iostream>
+#include <boost/asio.hpp>
 
 class MsgNode {
     friend class CSession;
@@ -13,11 +17,25 @@ public:
     MsgNode(short maxLength);
     ~MsgNode();
     void Clear();
-private:
+
     short _currentLength;
     short _totalLength;
     char* _data;
 
+};
+
+class RecvNode : public MsgNode{
+public:
+    RecvNode(short maxLength, short messageID);
+private:
+    short messageID_;
+};
+
+class SendNode: public MsgNode{
+public:
+    SendNode(const char* message, short maxLength, short messageID);
+private:
+    short messageID_;
 };
 
 

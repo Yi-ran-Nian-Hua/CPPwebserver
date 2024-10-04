@@ -32,3 +32,22 @@ MsgNode::~MsgNode(){
     delete[] _data;
 }
 
+RecvNode::RecvNode(short maxLength, short messageID):
+        MsgNode(maxLength),messageID_{messageID}{
+
+}
+
+SendNode::SendNode(const char *message, short maxLength, short messageID):
+        MsgNode(maxLength + HEAD_LENGTH), messageID_{messageID}{
+    // 先发送 ID, 转换成网络字节序
+    short trueMessageID = boost::asio::detail::socket_ops::host_to_network_short(messageID);
+    memcpy(_data, &trueMessageID, HEAD_ID_LEN);
+
+    // 转换成网络字节序
+    short maxLengthHost = boost::asio::detail::socket_ops::host_to_network_short(maxLength);
+    memcpy(_data + HEAD_ID_LEN, &maxLengthHost, HEAD_DATA_LEN);
+    memcpy(_data + HEAD_LENGTH,message, maxLength);
+
+}
+
+
