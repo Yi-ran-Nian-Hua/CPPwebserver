@@ -12,7 +12,7 @@
 #include "MsgNode.h"
 
 CSession::~CSession() {
-
+    std::cout << "~CSession destruct" << std::endl;
 }
 
 CSession::CSession(boost::asio::io_context &io_context, CServer *server):
@@ -38,7 +38,7 @@ void CSession::Start() {
                                       std::placeholders::_1, std::placeholders::_2,sharedSelf()));
 }
 
-void CSession::Send(char *msg, int maxLength) {
+void CSession::Send(char *msg, int maxLength, short messageID) {
     std::lock_guard<std::mutex> lock(_sendBlock);
     int sendQueueSize = _sendQue.size();
     if (sendQueueSize > MAX_SENDQUE){
@@ -46,7 +46,7 @@ void CSession::Send(char *msg, int maxLength) {
         return;
     }
 
-    _sendQue.push(std::make_shared<MsgNode>(msg, maxLength));
+    _sendQue.push(std::make_shared<SendNode>(msg, maxLength, messageID));
     if(sendQueueSize > 0){
         return;
     }
@@ -55,7 +55,7 @@ void CSession::Send(char *msg, int maxLength) {
                              std::bind(&CSession::HandleWrite, this, std::placeholders::_1, sharedSelf()));
 }
 
-void CSession::Send(std::string msg) {
+void CSession::Send(std::string msg, short messageID) {
     std::lock_guard<std::mutex> lock(_sendBlock);
     int sendQueueSize = _sendQue.size();
     if (sendQueueSize > MAX_SENDQUE){
@@ -63,7 +63,7 @@ void CSession::Send(std::string msg) {
         return;
     }
 
-    _sendQue.push(std::make_shared<MsgNode>(msg.c_str(), msg.length()));
+    _sendQue.push(std::make_shared<SendNode>(msg.c_str(), msg.length(), messageID));
     if(sendQueueSize > 0){
         return;
     }
@@ -120,12 +120,13 @@ void CSession::HandleReadHead(const boost::system::error_code &error, size_t byt
         // 首先解析 ID
         short dataID = 0;
         memcpy(&dataID, _recvHeadNode->_data, HEAD_ID_LEN);
-        std::cout << "Data length is: " << dataID << std::endl;
+
 
         // 字节序转换, 将网络字节序转换为本地字节序
         int trueDataID = boost::asio::detail::socket_ops::network_to_host_short(dataID);
+        std::cout << "Data ID is: " << dataID << std::endl;
 
-        // 如果头部长度非法
+        // 如果 ID 非法
         if(trueDataID > MAX_LENGTH){
             std::cerr << "Invalid ID : " << trueDataID << std::endl;
             _server->ClearSession(this->getUuid());
@@ -135,10 +136,11 @@ void CSession::HandleReadHead(const boost::system::error_code &error, size_t byt
         // 处理头部数据长度信息
         short dataLength = 0;
         memcpy(&dataLength, _recvHeadNode->_data + HEAD_ID_LEN, HEAD_DATA_LEN);
-        std::cout << "Data length is: " << dataLength << std::endl;
+
 
         // 字节序转换, 将网络字节序转换为本地字节序
         int trueDataLength = boost::asio::detail::socket_ops::network_to_host_short(dataLength);
+        std::cout << "Data length is: " << trueDataLength << std::endl;
 
         // 如果头部长度非法
         if(trueDataLength > MAX_LENGTH){
@@ -147,7 +149,7 @@ void CSession::HandleReadHead(const boost::system::error_code &error, size_t byt
             return;
         }
 
-        _recvMsgNode = std::make_shared<MsgNode>(trueDataLength);
+        _recvMsgNode = std::make_shared<RecvNode>(trueDataLength, trueDataID);
         boost::asio::async_read(_socket, boost::asio::buffer(_recvMsgNode->_data, _recvMsgNode->_totalLength),
                                 std::bind(&CSession::HandleReadMsg, this, std::placeholders::_1, std::placeholders::_2,
                                           shareSelf));
@@ -163,8 +165,15 @@ void CSession::HandleReadMsg(const boost::system::error_code &error, size_t byte
                              std::shared_ptr<CSession> sharedSelf) {
     if(!error){
         _recvMsgNode->_data[_recvMsgNode->_totalLength] = '\0';
-        std::cout << "Receive data is: " << _recvMsgNode->_data << std::endl;
-        Send(_recvMsgNode->_data, _recvMsgNode->_totalLength);
+        Json::Reader reader;
+        Json::Value root;
+        reader.parse(std::string(_recvMsgNode->_data, _recvMsgNode->_totalLength), root);
+        std::cout << "recevie msg id  is " << root["id"].asInt() << " msg data is "
+                  << root["data"].asString() << std::endl;
+        root["data"] = "server has received msg, msg data is " + root["data"].asString();
+        std::string return_str = root.toStyledString();
+        //std::cout << "Receive data is: " << _recvMsgNode->_data << std::endl;
+        Send(return_str, root["id"].asInt());
         //再次接收头部数据
         _recvHeadNode->Clear();
         boost::asio::async_read(_socket, boost::asio::buffer(_recvHeadNode->_data, HEAD_LENGTH),

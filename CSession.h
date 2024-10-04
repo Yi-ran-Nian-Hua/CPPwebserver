@@ -11,6 +11,7 @@
 #include <mutex>
 #include <memory>
 #include "const.h"
+#include "MsgNode.h"
 
 using boost::asio::ip::tcp;
 class CServer;
@@ -23,8 +24,8 @@ public:
     tcp::socket & getSocket();
     std::string& getUuid();
     void Start();
-    void Send(char* msg, int maxLength);
-    void Send(std::string msg);
+    void Send(char* msg, int maxLength, short messageID);
+    void Send(std::string msg, short messageID);
     void Close();
     std::shared_ptr<CSession> sharedSelf();
 private:

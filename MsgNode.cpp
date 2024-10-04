@@ -47,7 +47,6 @@ SendNode::SendNode(const char *message, short maxLength, short messageID):
     short maxLengthHost = boost::asio::detail::socket_ops::host_to_network_short(maxLength);
     memcpy(_data + HEAD_ID_LEN, &maxLengthHost, HEAD_DATA_LEN);
     memcpy(_data + HEAD_LENGTH,message, maxLength);
-
 }
 
 
