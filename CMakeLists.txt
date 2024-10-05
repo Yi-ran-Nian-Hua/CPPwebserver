@@ -22,5 +22,7 @@ add_executable(MyJsonServer main.cpp
         LogicSystem.h
         Signleton.h
         LogicNode.cpp
-        LogicNode.h)
+        LogicNode.h
+        AsioIoServicePool.cpp
+        AsioIoServicePool.h)
 target_link_libraries(MyJsonServer libjsoncpp.26.dylib)

@@ -91,6 +91,13 @@ build CMakeFiles/MyJsonServer.dir/LogicNode.cpp.o: CXX_COMPILER__MyJsonServer_un
   OBJECT_DIR = CMakeFiles/MyJsonServer.dir
   OBJECT_FILE_DIR = CMakeFiles/MyJsonServer.dir
 
+build CMakeFiles/MyJsonServer.dir/AsioIoServicePool.cpp.o: CXX_COMPILER__MyJsonServer_unscanned_Debug /Users/yinyanjiang/Desktop/C++Boost/MyLogicServer/AsioIoServicePool.cpp || cmake_object_order_depends_target_MyJsonServer
+  DEP_FILE = CMakeFiles/MyJsonServer.dir/AsioIoServicePool.cpp.o.d
+  FLAGS = -g -std=gnu++20 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX15.0.sdk -fcolor-diagnostics
+  INCLUDES = -I/opt/homebrew/include -I/Users/yinyanjiang/jsoncpp-1.9.6/include
+  OBJECT_DIR = CMakeFiles/MyJsonServer.dir
+  OBJECT_FILE_DIR = CMakeFiles/MyJsonServer.dir
+
 
 # =============================================================================
 # Link build statements for EXECUTABLE target MyJsonServer
@@ -99,7 +106,7 @@ build CMakeFiles/MyJsonServer.dir/LogicNode.cpp.o: CXX_COMPILER__MyJsonServer_un
 #############################################
 # Link the executable MyJsonServer
 
-build MyJsonServer: CXX_EXECUTABLE_LINKER__MyJsonServer_Debug CMakeFiles/MyJsonServer.dir/main.cpp.o CMakeFiles/MyJsonServer.dir/CServer.cpp.o CMakeFiles/MyJsonServer.dir/CSession.cpp.o CMakeFiles/MyJsonServer.dir/MsgNode.cpp.o CMakeFiles/MyJsonServer.dir/LogicSystem.cpp.o CMakeFiles/MyJsonServer.dir/LogicNode.cpp.o
+build MyJsonServer: CXX_EXECUTABLE_LINKER__MyJsonServer_Debug CMakeFiles/MyJsonServer.dir/main.cpp.o CMakeFiles/MyJsonServer.dir/CServer.cpp.o CMakeFiles/MyJsonServer.dir/CSession.cpp.o CMakeFiles/MyJsonServer.dir/MsgNode.cpp.o CMakeFiles/MyJsonServer.dir/LogicSystem.cpp.o CMakeFiles/MyJsonServer.dir/LogicNode.cpp.o CMakeFiles/MyJsonServer.dir/AsioIoServicePool.cpp.o
   FLAGS = -g -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX15.0.sdk
   LINK_LIBRARIES = -Wl,-rpath,/Users/yinyanjiang/jsoncpp-1.9.6/build/lib  -ljsoncpp.26
   LINK_PATH = -L/Users/yinyanjiang/jsoncpp-1.9.6/build/lib
