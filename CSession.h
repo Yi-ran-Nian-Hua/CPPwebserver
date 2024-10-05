@@ -16,7 +16,8 @@
 using boost::asio::ip::tcp;
 class CServer;
 class MsgNode;
-
+class SendNode;
+class RecvNode;
 class CSession :public std::enable_shared_from_this<CSession>{
 public:
     CSession(boost::asio::io_context& io_context, CServer* server);
@@ -40,11 +41,11 @@ private:
     char _data[MAX_LENGTH];
     CServer* _server;
     bool _bClose;
-    std::queue<std::shared_ptr<MsgNode>> _sendQue;
+    std::queue<std::shared_ptr<SendNode>> _sendQue;
     std::mutex _sendBlock;
 
     // 收到的消息结构
-    std::shared_ptr<MsgNode> _recvMsgNode;
+    std::shared_ptr<RecvNode> _recvMsgNode;
     bool _bHeadParsed;
     // 收到的头部结构
     std::shared_ptr<MsgNode> _recvHeadNode;

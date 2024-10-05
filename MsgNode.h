@@ -9,6 +9,7 @@
 #include "const.h"
 #include <iostream>
 #include <boost/asio.hpp>
+#include "LogicSystem.h"
 
 class MsgNode {
     friend class CSession;
@@ -25,6 +26,7 @@ public:
 };
 
 class RecvNode : public MsgNode{
+    friend class LogicSystem;
 public:
     RecvNode(short maxLength, short messageID);
 private:
@@ -32,6 +34,7 @@ private:
 };
 
 class SendNode: public MsgNode{
+    friend class LogicSystem;
 public:
     SendNode(const char* message, short maxLength, short messageID);
 private:

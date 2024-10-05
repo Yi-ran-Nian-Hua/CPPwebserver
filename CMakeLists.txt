@@ -17,9 +17,10 @@ add_executable(MyJsonServer main.cpp
         CSession.h
         MsgNode.cpp
         MsgNode.h
-        RecvNode.cpp
-        RecvNode.h
-        SendNode.cpp
-        SendNode.h
-        const.h)
+        const.h
+        LogicSystem.cpp
+        LogicSystem.h
+        Signleton.h
+        LogicNode.cpp
+        LogicNode.h)
 target_link_libraries(MyJsonServer libjsoncpp.26.dylib)

@@ -10,6 +10,7 @@
 #include <json/reader.h>
 #include "CServer.h"
 #include "MsgNode.h"
+#include "LogicSystem.h"
 
 CSession::~CSession() {
     std::cout << "~CSession destruct" << std::endl;
@@ -19,7 +20,7 @@ CSession::CSession(boost::asio::io_context &io_context, CServer *server):
         _socket(io_context), _server(server), _bClose(false), _bHeadParsed(false){
     boost::uuids::uuid aUUid = boost::uuids::random_generator()();
     _uuid = boost::uuids::to_string(aUUid);
-    _recvHeadNode = std::make_shared<MsgNode>(HEAD_LENGTH);
+    _recvHeadNode = std::make_shared<MsgNode>(HEAD_TOTAL_LEN);
 
 }
 
@@ -33,7 +34,7 @@ std::string &CSession::getUuid() {
 
 void CSession::Start() {
     memset(_data, 0, MAX_LENGTH);
-    boost::asio::async_read(_socket, boost::asio::buffer(_recvHeadNode->_data, HEAD_LENGTH),
+    boost::asio::async_read(_socket, boost::asio::buffer(_recvHeadNode->_data, HEAD_TOTAL_LEN),
                             std::bind(&CSession::HandleReadHead, this,
                                       std::placeholders::_1, std::placeholders::_2,sharedSelf()));
 }
@@ -109,7 +110,7 @@ void CSession::HandleWrite(const boost::system::error_code &error, std::shared_p
 void CSession::HandleReadHead(const boost::system::error_code &error, size_t bytes_transferred,
                               std::shared_ptr<CSession> shareSelf) {
     if(!error){
-        if(bytes_transferred < HEAD_LENGTH){
+        if(bytes_transferred < HEAD_TOTAL_LEN){
             std::cerr << "Read Head length error" << std::endl;
             Close();
             _server->ClearSession(this->getUuid());
@@ -124,7 +125,7 @@ void CSession::HandleReadHead(const boost::system::error_code &error, size_t byt
 
         // 字节序转换, 将网络字节序转换为本地字节序
         int trueDataID = boost::asio::detail::socket_ops::network_to_host_short(dataID);
-        std::cout << "Data ID is: " << dataID << std::endl;
+        std::cout << "Data ID is: " << trueDataID << std::endl;
 
         // 如果 ID 非法
         if(trueDataID > MAX_LENGTH){
@@ -165,6 +166,9 @@ void CSession::HandleReadMsg(const boost::system::error_code &error, size_t byte
                              std::shared_ptr<CSession> sharedSelf) {
     if(!error){
         _recvMsgNode->_data[_recvMsgNode->_totalLength] = '\0';
+        auto newLogicNode = make_shared<LogicNode>(sharedSelf, _recvMsgNode);
+        LogicSystem::GetInstance()->PostMsgToQueue(newLogicNode);
+
         Json::Reader reader;
         Json::Value root;
         reader.parse(std::string(_recvMsgNode->_data, _recvMsgNode->_totalLength), root);
@@ -173,10 +177,12 @@ void CSession::HandleReadMsg(const boost::system::error_code &error, size_t byte
         root["data"] = "server has received msg, msg data is " + root["data"].asString();
         std::string return_str = root.toStyledString();
         //std::cout << "Receive data is: " << _recvMsgNode->_data << std::endl;
+
         Send(return_str, root["id"].asInt());
+
         //再次接收头部数据
         _recvHeadNode->Clear();
-        boost::asio::async_read(_socket, boost::asio::buffer(_recvHeadNode->_data, HEAD_LENGTH),
+        boost::asio::async_read(_socket, boost::asio::buffer(_recvHeadNode->_data, HEAD_TOTAL_LEN),
                                 std::bind(&CSession::HandleReadHead, this, std::placeholders::_1,
                                           std::placeholders::_2,sharedSelf));
     }else{
